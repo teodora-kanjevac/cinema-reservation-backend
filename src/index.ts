@@ -4,19 +4,28 @@ import cors from 'cors'
 import movieRoutes from '../src/routes/movieRoutes'
 import cinemaRoutes from '../src/routes/cinemaRoutes'
 import timeTableRoutes from '../src/routes/timeTableRoutes'
+import invoiceRoutes from '../src/routes/invoiceRoutes'
+import authRoutes from '../src/routes/authRoutes'
 import { dataSource } from './config/db'
 import { errorHandler } from './middleware/errorHandler'
 
 const app: Application = express()
 const PORT = 3001
 
-app.use(cors())
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  }),
+)
 app.use(morgan('dev'))
 app.use(express.json())
 
-app.use('/api/movie', movieRoutes)
-app.use('/api/cinema', cinemaRoutes)
-app.use('/api/time-table', timeTableRoutes)
+app.use('/api/movies', movieRoutes)
+app.use('/api/cinemas', cinemaRoutes)
+app.use('/api/time-tables', timeTableRoutes)
+app.use('/api/invoices', invoiceRoutes)
+app.use('/api/auth', authRoutes)
 
 app.use(errorHandler)
 

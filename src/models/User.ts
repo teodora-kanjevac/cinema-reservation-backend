@@ -22,8 +22,11 @@ export class User {
   @Column('varchar', { name: 'password', length: 255 })
   password: string
 
-  @Column('int', { name: 'email_code', nullable: true })
-  emailCode: number | null
+  @Column('varchar', { name: 'email_code', length: 6, nullable: true })
+  emailCode: string | null
+
+  @Column('datetime', { name: 'email_code_expires_at', nullable: true })
+  emailCodeExpiresAt: Date | null
 
   @Column('datetime', {
     name: 'created_at',

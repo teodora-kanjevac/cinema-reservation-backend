@@ -18,6 +18,7 @@ export interface MovieDTO {
   title: string
   description: string
   poster: string
+  releaseDate: Date
   runTime: number
   director: DirectorDTO
   genres: GenreDTO[]

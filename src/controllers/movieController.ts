@@ -12,6 +12,16 @@ export const getMovies = async (req: Request, res: Response, next: NextFunction)
   }
 }
 
+export const getGenres = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const genres = await MovieService.getAllGenres()
+
+    res.status(200).json(genres)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const getMovieDetails = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const movieId = parseInt(req.params.id as string)
@@ -31,6 +41,18 @@ export const getMovieById = async (req: Request, res: Response, next: NextFuncti
     const movie = await MovieService.getById(movieId)
 
     res.status(200).json(movie)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getGenreById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const genreId = parseInt(req.params.id as string)
+
+    const genre = await MovieService.getGenreById(genreId)
+
+    res.status(200).json(genre)
   } catch (error) {
     next(error)
   }
