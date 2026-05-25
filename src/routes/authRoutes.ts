@@ -1,9 +1,8 @@
 import { Router } from 'express'
-import { login, logout, refresh, register, resendCode, verifyCode } from '../controllers/authController'
+import { login, logout, register, resendCode, verifyCode } from '../controllers/authController'
 
 const router: Router = Router()
 
-router.post('/refresh', refresh)
 router.post('/register', register)
 router.post('/verify', verifyCode)
 router.post('/resend-code', resendCode)

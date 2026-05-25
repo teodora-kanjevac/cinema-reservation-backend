@@ -3,7 +3,12 @@ import { InvoiceService } from '../services/invoiceService'
 
 export const getOrCreateCart = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = parseInt(req.params.userId as string)
+    const userId = (req as any).user?.userId
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized access.' })
+      return
+    }
 
     const cart = await InvoiceService.getOrCreateActiveCart(userId)
 
@@ -13,11 +18,34 @@ export const getOrCreateCart = async (req: Request, res: Response, next: NextFun
   }
 }
 
-export const addItemToCart = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getItemCountInCart = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { userId, timeTableId, price, count } = req.body
+    const userId = (req as any).user?.userId
 
-    const cartItem = await InvoiceService.addItemToCart(userId, timeTableId, price, count)
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized access.' })
+      return
+    }
+
+    const count = await InvoiceService.getItemCount(userId)
+
+    res.status(200).json(count)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const addItemsToCart = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = (req as any).user?.userId
+    const { timeTableId, seats } = req.body
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized access.' })
+      return
+    }
+
+    const cartItem = await InvoiceService.addItemsToCart(userId, timeTableId, seats)
 
     res.status(200).json(cartItem)
   } catch (error) {
@@ -37,13 +65,36 @@ export const removeItemFromCart = async (req: Request, res: Response, next: Next
   }
 }
 
+export const removeAllItemsFromCart = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = (req as any).user?.userId
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized access.' })
+      return
+    }
+
+    await InvoiceService.removeAllItemsFromCart(userId)
+
+    res.status(200).json({ message: `Item removed successfully.` })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const checkoutCart = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { userId, purchaseId, counterName } = req.body
+    const userId = (req as any).user?.userId
+    const { purchaseId, counterName } = req.body
 
-    await InvoiceService.checkoutCart(userId, purchaseId, counterName)
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized access.' })
+      return
+    }
 
-    res.status(200).json({ message: `User checked out successfully.` })
+    const invoice = await InvoiceService.checkoutCart(userId, purchaseId, counterName)
+
+    res.status(200).json(invoice)
   } catch (error) {
     next(error)
   }

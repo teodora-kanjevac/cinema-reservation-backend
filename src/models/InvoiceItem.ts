@@ -19,6 +19,9 @@ export class InvoiceItem {
   @Column('int', { name: 'time_table_id', unsigned: true })
   timeTableId: number
 
+  @Column('int', { name: 'seat_number', unsigned: true })
+  seatNumber: number
+
   @Column('int', { name: 'price_per_item', unsigned: true })
   pricePerItem: number
 

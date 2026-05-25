@@ -1,7 +1,10 @@
 import type { NextFunction, Request, Response } from 'express'
+import jwt from 'jsonwebtoken'
 import { AuthService } from '../services/authService'
 import { MailService } from '../services/mailService'
 import { User } from '../models/User'
+import { AppError } from '../errors/AppError'
+import { ErrorCodes } from '../errors/errorCodes'
 
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -17,6 +20,17 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     const verificationCode = await AuthService.register(newUser)
 
     await MailService.sendVerificationCode(email, firstName, verificationCode)
+
+    const signupToken = jwt.sign({ email: newUser.email }, process.env.JWT_ACCESS_SECRET as string, {
+      expiresIn: '15m',
+    })
+
+    res.cookie('signupContext', signupToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000,
+    })
 
     res.status(201).json({ message: 'Registration successful. Verification code sent.' })
   } catch (error) {
@@ -38,8 +52,16 @@ export const verifyCode = async (req: Request, res: Response, next: NextFunction
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
 
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000,
+    })
+
+    res.clearCookie('signupContext')
+
     res.status(200).json({
-      token: result.accessToken,
       user: result.user,
     })
   } catch (error) {
@@ -49,8 +71,14 @@ export const verifyCode = async (req: Request, res: Response, next: NextFunction
 
 export const resendCode = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { email } = req.body
-    const { user, verificationCode } = await AuthService.refreshCode(email)
+    const { signupContext } = req.cookies
+
+    if (!signupContext)
+      throw new AppError(ErrorCodes.UNAUTHORIZED, 'Verification session expired. Please sign up again.', 401)
+
+    const decoded = jwt.verify(signupContext, process.env.JWT_ACCESS_SECRET as string) as { email: string }
+
+    const { user, verificationCode } = await AuthService.refreshCode(decoded.email)
 
     await MailService.sendVerificationCode(user.email, user.firstName, verificationCode)
 
@@ -72,8 +100,14 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
 
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000,
+    })
+
     res.status(200).json({
-      token: result.accessToken,
       user: result.user,
     })
   } catch (error) {
@@ -81,20 +115,11 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   }
 }
 
-export const refresh = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const refreshToken = req.cookies?.refreshToken
-    const accessToken = await AuthService.refresh(refreshToken)
-
-    res.status(200).json({ token: accessToken })
-  } catch (error) {
-    next(error)
-  }
-}
-
 export const logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    res.clearCookie('accessToken')
     res.clearCookie('refreshToken')
+
     res.status(200).json({ message: 'Logged out successfully.' })
   } catch (error) {
     next(error)

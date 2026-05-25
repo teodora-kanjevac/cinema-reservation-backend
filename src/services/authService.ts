@@ -113,19 +113,4 @@ export class AuthService {
       },
     }
   }
-
-  static async refresh(refreshToken: string | undefined): Promise<string> {
-    if (!refreshToken) throw new AppError(ErrorCodes.UNAUTHORIZED, 'Refresh token missing.', 401)
-
-    try {
-      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string) as { userId: number }
-
-      const user = await repository.findOne({ where: { userId: decoded.userId } })
-      if (!user) throw new AppError(ErrorCodes.USER_NOT_FOUND, 'User not found.', 404)
-
-      return this.generateAccessToken(user.userId, user.email)
-    } catch (error) {
-      throw new AppError(ErrorCodes.TOKEN_EXPIRED, 'Invalid or expired refresh token.', 403)
-    }
-  }
 }

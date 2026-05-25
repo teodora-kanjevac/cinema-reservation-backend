@@ -1,6 +1,7 @@
 import express, { type Application } from 'express'
 import morgan from 'morgan'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import movieRoutes from '../src/routes/movieRoutes'
 import cinemaRoutes from '../src/routes/cinemaRoutes'
 import timeTableRoutes from '../src/routes/timeTableRoutes'
@@ -20,6 +21,7 @@ app.use(
 )
 app.use(morgan('dev'))
 app.use(express.json())
+app.use(cookieParser())
 
 app.use('/api/movies', movieRoutes)
 app.use('/api/cinemas', cinemaRoutes)

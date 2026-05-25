@@ -21,6 +21,15 @@ export class TimeTable {
   @Column('time', { name: 'start_time' })
   startTime: string
 
+  @Column('date', { name: 'screening_date' })
+  screeningDate: string
+
+  @Column('varchar', { name: 'screen_type', length: 50, default: '2D' })
+  screenType: string
+
+  @Column('int', { name: 'total_capacity', default: 128 })
+  totalCapacity: number
+
   @Column('int', { name: 'price', unsigned: true })
   price: number
 

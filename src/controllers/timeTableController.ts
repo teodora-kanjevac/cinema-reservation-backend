@@ -59,3 +59,27 @@ export const removeTimeTable = async (req: Request, res: Response, next: NextFun
     next(error)
   }
 }
+
+export const getScreeningsForMovie = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const movieId = Number(req.params.movieId)
+
+    const data = await TimeTableService.getScreeningsForMovie(movieId)
+
+    res.status(200).json(data)
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const getSeatMap = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const id = Number(req.params.id)
+
+    const data = await TimeTableService.getSeatMap(id)
+
+    res.status(200).json(data)
+  } catch (err) {
+    next(err)
+  }
+}

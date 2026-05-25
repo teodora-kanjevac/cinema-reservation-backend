@@ -7,16 +7,46 @@ export interface AuthenticatedRequest extends Request {
   user?: { userId: number; email: string }
 }
 
-export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-  const authHeader = req.headers['authorization']
-  const token = authHeader && authHeader.split(' ')[1]
+export const authenticateToken = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  const { accessToken, refreshToken } = req.cookies
 
-  if (!token) throw new AppError(ErrorCodes.UNAUTHORIZED, 'Access token required.', 401)
+  if (accessToken) {
+    try {
+      const decoded = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET as string) as {
+        userId: number
+        email: string
+      }
+      req.user = { userId: decoded.userId, email: decoded.email }
+      return next()
+    } catch (error) {}
+  }
 
-  jwt.verify(token, process.env.JWT_ACCESS_SECRET as string, (error, decoded) => {
-    if (error) throw new AppError(ErrorCodes.TOKEN_EXPIRED, 'Token is invalid or expired.', 403)
+  if (!refreshToken) throw new AppError(ErrorCodes.UNAUTHORIZED, 'Authentication required.', 401)
 
-    req.user = decoded as { userId: number; email: string }
+  try {
+    const decodedRefresh = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string) as {
+      userId: number
+      email: string
+    }
+
+    const userPayload = { userId: decodedRefresh.userId, email: decodedRefresh.email }
+
+    const accessToken = jwt.sign(userPayload, process.env.JWT_ACCESS_SECRET as string, { expiresIn: '15m' })
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000,
+    })
+
+    req.user = userPayload
     next()
-  })
+  } catch (refreshError) {
+    new AppError(ErrorCodes.TOKEN_EXPIRED, 'Session expired. Please log in again.', 401)
+  }
 }
