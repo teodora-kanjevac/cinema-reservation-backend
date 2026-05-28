@@ -5,6 +5,8 @@ import { TimeTable } from '../models/TimeTable'
 import { InvoiceItem } from '../models/InvoiceItem'
 import { Invoice } from '../models/Invoice'
 import { User } from '../models/User'
+import { Wishlist } from '../models/Wishlist'
+import { WishlistItem } from '../models/WishlistItem'
 
 dotenv.config()
 
@@ -15,5 +17,5 @@ export const dataSource = new DataSource({
   username: process.env.DB_USER || 'root',
   password: process.env.DB_PASS || 'root',
   database: process.env.DB_NAME || 'cinema-reservation',
-  entities: [User, Cinema, TimeTable, InvoiceItem, Invoice],
+  entities: [User, Cinema, TimeTable, InvoiceItem, Invoice, Wishlist, WishlistItem],
 })

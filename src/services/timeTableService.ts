@@ -51,7 +51,7 @@ export class TimeTableService {
 
   static async getMovieDetails(id: number) {
     const movie = await MovieService.getById(id)
-    if (movie === null) throw new AppError(ErrorCodes.NOT_FOUND, `Movie with id ${id} not found.`, 404)
+    if (!movie) throw new AppError(ErrorCodes.NOT_FOUND, `Movie with id ${id} not found.`, 404)
 
     const data = await repository.find({
       select: {
@@ -86,7 +86,7 @@ export class TimeTableService {
       where: { timeTableId: id },
     })
 
-    if (data === null) throw new AppError(ErrorCodes.NOT_FOUND, `TimeTable with id ${id} not found.`, 404)
+    if (!data) throw new AppError(ErrorCodes.NOT_FOUND, `TimeTable with id ${id} not found.`, 404)
 
     return data
   }
@@ -106,7 +106,7 @@ export class TimeTableService {
 
   static async update(id: number, tt: TimeTable) {
     const data = await repository.findOneBy({ timeTableId: id })
-    if (data === null) throw new AppError(ErrorCodes.NOT_FOUND, `TimeTable with id ${id} not found.`, 404)
+    if (!data) throw new AppError(ErrorCodes.NOT_FOUND, `TimeTable with id ${id} not found.`, 404)
 
     data.movieId = tt.movieId
     data.cinemaId = tt.cinemaId

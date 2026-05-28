@@ -7,6 +7,8 @@ import cinemaRoutes from '../src/routes/cinemaRoutes'
 import timeTableRoutes from '../src/routes/timeTableRoutes'
 import invoiceRoutes from '../src/routes/invoiceRoutes'
 import authRoutes from '../src/routes/authRoutes'
+import userRoutes from '../src/routes/userRoutes'
+import wishlistRoutes from '../src/routes/wishlistRoutes'
 import { dataSource } from './config/db'
 import { errorHandler } from './middleware/errorHandler'
 
@@ -28,6 +30,8 @@ app.use('/api/cinemas', cinemaRoutes)
 app.use('/api/time-tables', timeTableRoutes)
 app.use('/api/invoices', invoiceRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/wishlists', wishlistRoutes)
 
 app.use(errorHandler)
 

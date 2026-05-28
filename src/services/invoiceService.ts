@@ -1,5 +1,5 @@
 import { dataSource } from '../config/db'
-import { Brackets, IsNull } from 'typeorm'
+import { Brackets, IsNull, Not } from 'typeorm'
 import { Invoice } from '../models/Invoice'
 import { InvoiceItem } from '../models/InvoiceItem'
 import { AppError } from '../errors/AppError'
@@ -98,7 +98,15 @@ export class InvoiceService {
   }
 
   static async removeAllItemsFromCart(userId: number): Promise<void> {
-    const cart = await repository.findOne({ where: { userId }, select: { invoiceId: true } })
+    const cart = await repository.findOne({
+      where: {
+        userId,
+        pursId: IsNull(),
+        pursTime: IsNull(),
+        pursCounter: IsNull(),
+      },
+      select: { invoiceId: true },
+    })
 
     if (!cart) throw new AppError(ErrorCodes.NOT_FOUND, `Cart ${cart} not found.`, 404)
 
@@ -115,5 +123,26 @@ export class InvoiceService {
     cart.pursCounter = counterName
 
     return await repository.save(cart)
+  }
+
+  static async getUserBookings(userId: number): Promise<Invoice[]> {
+    return await repository.find({
+      where: {
+        user: { userId },
+        pursId: Not(IsNull()),
+        pursTime: Not(IsNull()),
+        pursCounter: Not(IsNull()),
+      },
+      relations: {
+        invoiceItems: {
+          timeTable: {
+            cinema: true,
+          },
+        },
+      },
+      order: {
+        pursTime: 'DESC',
+      },
+    })
   }
 }

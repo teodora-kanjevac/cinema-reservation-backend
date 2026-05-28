@@ -99,3 +99,20 @@ export const checkoutCart = async (req: Request, res: Response, next: NextFuncti
     next(error)
   }
 }
+
+export const getUserBookings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = (req as any).user?.userId
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized access.' })
+      return
+    }
+
+    const bookings = await InvoiceService.getUserBookings(userId)
+
+    res.status(200).json(bookings)
+  } catch (error) {
+    next(error)
+  }
+}

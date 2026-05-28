@@ -22,6 +22,13 @@ export class User {
   @Column('varchar', { name: 'password', length: 255 })
   password: string
 
+  @Column({
+    name: 'date_of_birth',
+    type: 'date',
+    nullable: true,
+  })
+  dateOfBirth: Date | null
+
   @Column('varchar', { name: 'email_code', length: 6, nullable: true })
   emailCode: string | null
 

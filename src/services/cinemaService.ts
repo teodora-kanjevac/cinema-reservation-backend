@@ -28,7 +28,7 @@ export class CinemaService {
       where: { cinemaId: id },
     })
 
-    if (data === null) throw new AppError(ErrorCodes.NOT_FOUND, `Cinema with id ${id} not found.`, 404)
+    if (!data) throw new AppError(ErrorCodes.NOT_FOUND, `Cinema with id ${id} not found.`, 404)
 
     return data
   }
@@ -46,7 +46,7 @@ export class CinemaService {
   static async update(id: number, cinema: Cinema) {
     const oldCinema = await this.getById(id)
 
-    if (cinema === null) throw new AppError(ErrorCodes.NOT_FOUND, `Cinema with id ${id} not found.`, 404)
+    if (!cinema) throw new AppError(ErrorCodes.NOT_FOUND, `Cinema with id ${id} not found.`, 404)
 
     oldCinema.name = cinema.name
     oldCinema.address = cinema.address
@@ -58,7 +58,7 @@ export class CinemaService {
   static async remove(id: number) {
     const cinema = await this.getById(id)
 
-    if (cinema === null) throw new AppError(ErrorCodes.NOT_FOUND, `Cinema with id ${id} not found.`, 404)
+    if (!cinema) throw new AppError(ErrorCodes.NOT_FOUND, `Cinema with id ${id} not found.`, 404)
 
     await repository.delete(cinema.cinemaId)
   }
