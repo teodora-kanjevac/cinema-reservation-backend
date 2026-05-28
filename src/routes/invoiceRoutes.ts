@@ -2,6 +2,7 @@ import { Router } from 'express'
 import {
   addItemsToCart,
   checkoutCart,
+  downloadInvoiceReceipt,
   getItemCountInCart,
   getOrCreateCart,
   getUserBookings,
@@ -19,6 +20,7 @@ router.delete('/cart/remove/:id', removeItemFromCart)
 router.post('/checkout', checkoutCart)
 router.post('/cart/add', addItemsToCart)
 router.get('/cart/count', getItemCountInCart)
+router.get('/:invoiceId/download', downloadInvoiceReceipt)
 router.get('/cart', getOrCreateCart)
 router.get('/bookings', getUserBookings)
 

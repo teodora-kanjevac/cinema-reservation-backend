@@ -38,4 +38,59 @@ export class MailService {
     `
     await this.send(to, subject, html)
   }
+
+  static async sendBookingConfirmation(
+    to: string,
+    name: string,
+    bookingDetails: {
+      movieTitle: string
+      cinema: string
+      date: string
+      time: string
+      seats: string
+      amount: number
+    },
+  ): Promise<void> {
+    const subject = `Booking Confirmed: ${bookingDetails.movieTitle}`
+    const html = `
+      <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #1e293b; margin-bottom: 12px;">Your tickets are ready, ${name}!</h2>
+        <p style="color: #64748b; font-size: 14px; margin-top: 0; margin-bottom: 24px; line-height: 1.6;">Your booking is complete. Present your digital ticket details at the cinema counter.</p>
+        
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+          <h3 style="color: #af831d; margin-top: 0; margin-bottom: 16px; font-size: 18px; border-b: 1px solid #e2e8f0; padding-bottom: 8px;">
+            ${bookingDetails.movieTitle}
+          </h3>
+          
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #475569; line-height: 1.8;">
+            <tr>
+              <td style="padding: 4px 0; font-weight: 600; width: 80px;">Cinema:</td>
+              <td style="padding: 4px 0; color: #1e293b;">${bookingDetails.cinema}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; font-weight: 600;">Date:</td>
+              <td style="padding: 4px 0; color: #1e293b;">${bookingDetails.date}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; font-weight: 600;">Time:</td>
+              <td style="padding: 4px 0; color: #1e293b;">${bookingDetails.time}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; font-weight: 600;">Seats:</td>
+              <td style="padding: 4px 0; color: #1e293b; font-family: monospace; font-size: 14px; font-weight: 600;">${bookingDetails.seats}</td>
+            </tr>
+            <tr style="border-top: 1px dashed #cbd5e1;">
+              <td style="padding: 12px 0 0 0; font-weight: bold; color: #1e293b; font-size: 16px;">Total:</td>
+              <td style="padding: 12px 0 0 0; font-weight: bold; color: #af831d; font-size: 16px;">${bookingDetails.amount.toFixed(2)} RSD</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="text-align: center;">
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile" style="background: #db9706; color: white; padding: 10px 16px; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px; display: inline-block;">View in Dashboard</a>
+        </div>
+      </div>
+    `
+    await this.send(to, subject, html)
+  }
 }

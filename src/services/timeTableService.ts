@@ -71,19 +71,34 @@ export class TimeTableService {
     return { ...movie, timeTables: data }
   }
 
+  static async getAll(): Promise<TimeTable[]> {
+    const timetables = await repository.find({ relations: { cinema: true }, order: { screeningDate: 'desc' } })
+
+    const detailedTimetables = await Promise.all(
+      timetables.map(async (item) => {
+        let title = 'N/A'
+
+        if (item.movieId) {
+          const movie = await MovieService.getById(item.movieId)
+          if (movie && movie.title) {
+            title = movie.title
+          }
+        }
+
+        return {
+          ...item,
+          movieTitle: title,
+        }
+      }),
+    )
+
+    return detailedTimetables
+  }
+
   static async getById(id: number) {
     const data = await repository.findOne({
-      select: {
-        timeTableId: true,
-        movieId: true,
-        cinemaId: true,
-        startTime: true,
-        price: true,
-        totalCapacity: true,
-        screenType: true,
-        screeningDate: true,
-      },
       where: { timeTableId: id },
+      relations: { cinema: true },
     })
 
     if (!data) throw new AppError(ErrorCodes.NOT_FOUND, `TimeTable with id ${id} not found.`, 404)

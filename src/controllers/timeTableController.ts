@@ -11,6 +11,16 @@ export const getAvailableMovies = async (req: Request, res: Response, next: Next
   }
 }
 
+export const getTimeTables = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const timeTables = await TimeTableService.getAll()
+
+    res.status(200).json(timeTables)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const getTimeTableById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const timeTableId = parseInt(req.params.id as string)

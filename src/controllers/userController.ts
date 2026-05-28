@@ -18,6 +18,23 @@ export const getUserInfo = async (req: Request, res: Response, next: NextFunctio
   }
 }
 
+export const getUserStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = (req as any).user?.userId
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized access.' })
+      return
+    }
+
+    const stats = await UserService.getUserStats(userId)
+
+    res.status(200).json(stats)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const editUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = (req as any).user?.userId

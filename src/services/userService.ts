@@ -1,10 +1,15 @@
 import { dataSource } from '../config/db'
 import { AppError } from '../errors/AppError'
 import { ErrorCodes } from '../errors/errorCodes'
+import { Invoice } from '../models/Invoice'
 import { User } from '../models/User'
 import bcrypt from 'bcrypt'
+import { Wishlist } from '../models/Wishlist'
+import type { UserStatsDTO } from '../DTO/UserDTO'
 
 const repository = dataSource.getRepository(User)
+const invoiceRepository = dataSource.getRepository(Invoice)
+const wishlistRepository = dataSource.getRepository(Wishlist)
 
 export class UserService {
   static async getUserInfo(userId: number) {
@@ -20,7 +25,32 @@ export class UserService {
       },
     })
 
+    if (!data) throw new AppError(ErrorCodes.NOT_FOUND, `User with id ${userId} not found.`, 404)
+
     return data
+  }
+
+  static async getUserStats(userId: number): Promise<UserStatsDTO> {
+    const invoiceStats = await invoiceRepository
+      .createQueryBuilder('invoice')
+      .leftJoin('invoice.invoiceItems', 'item')
+      .leftJoin('item.timeTable', 'timeTable')
+      .select('COUNT(DISTINCT timeTable.movieId)', 'moviesWatched')
+      .addSelect('SUM(item.price_per_item * item.count)', 'totalMoneySpent')
+      .where('invoice.userId = :userId', { userId })
+      .getRawOne()
+
+    const wishlist = await wishlistRepository.findOne({
+      where: { userId },
+      relations: { items: true },
+    })
+
+    return {
+      userId,
+      moviesWatched: parseInt(invoiceStats.moviesWatched, 10) ?? 0,
+      totalMoneySpent: parseInt(invoiceStats.totalMoneySpent, 10) ?? 0,
+      wishlistItemCount: wishlist?.items?.length ?? 0,
+    }
   }
 
   static async update(userId: number, user: User) {

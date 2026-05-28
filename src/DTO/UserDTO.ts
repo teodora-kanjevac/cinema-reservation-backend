@@ -1,4 +1,4 @@
-import type { InvoiceDTO } from "./InvoiceDTO"
+import type { InvoiceDTO } from './InvoiceDTO'
 
 export interface UserDTO {
   id: number
@@ -9,4 +9,11 @@ export interface UserDTO {
   createdAt: Date
   verifiedAt?: Date
   invoices?: InvoiceDTO[]
+}
+
+export interface UserStatsDTO {
+  userId: number
+  moviesWatched: number
+  totalMoneySpent: number
+  wishlistItemCount: number
 }

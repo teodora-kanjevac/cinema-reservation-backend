@@ -1,5 +1,9 @@
 import type { NextFunction, Request, Response } from 'express'
 import { InvoiceService } from '../services/invoiceService'
+import { MailService } from '../services/mailService'
+import { UserService } from '../services/userService'
+import { InvoicePdfService } from '../services/receiptService'
+import { Invoice } from '../models/Invoice'
 
 export const getOrCreateCart = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -94,6 +98,17 @@ export const checkoutCart = async (req: Request, res: Response, next: NextFuncti
 
     const invoice = await InvoiceService.checkoutCart(userId, purchaseId, counterName)
 
+    const user = await UserService.getUserInfo(userId)
+
+    await MailService.sendBookingConfirmation(user.email, user.firstName, {
+      movieTitle: invoice.movieTitle,
+      cinema: invoice.displayCinema,
+      date: invoice.displayDate,
+      time: invoice.displayTime,
+      seats: invoice.seatLabels,
+      amount: invoice.totalAmount,
+    })
+
     res.status(200).json(invoice)
   } catch (error) {
     next(error)
@@ -112,6 +127,34 @@ export const getUserBookings = async (req: Request, res: Response, next: NextFun
     const bookings = await InvoiceService.getUserBookings(userId)
 
     res.status(200).json(bookings)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const downloadInvoiceReceipt = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const invoiceId = parseInt(req.params.invoiceId as string)
+    const userId = (req as any).user?.userId
+
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized access.' })
+      return
+    }
+
+    const user = await UserService.getUserInfo(userId)
+    const invoice = await InvoiceService.getById(invoiceId, userId)
+
+    const pdfBuffer = await InvoicePdfService.generateReceiptPdf(invoice, {
+      firstName: user.firstName,
+      lastName: user.lastName,
+    })
+
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', `attachment; filename="${invoice.pursId}.pdf"`)
+    res.setHeader('Content-Length', pdfBuffer.length)
+
+    res.end(pdfBuffer)
   } catch (error) {
     next(error)
   }
